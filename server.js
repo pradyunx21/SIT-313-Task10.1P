@@ -1,43 +1,42 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const mailgun = require('mailgun-js');
+const express = require("express");
+const mailgun = require("mailgun-js");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
-const PORT = 5001; // You can change the port if necessary
-
-// Mailgun configuration
-const mg = mailgun({
-  apiKey: 'a70d285f92ead148eb4903ab32d51678-f6fe91d3-b30c5f17', // Replace with your Mailgun private API key
-  domain: 'sandboxcd7ac281349c4ce3bef27704c2b89750.mailgun.org',  // Replace with your Mailgun domain
-});
-
-// Middleware
+app.use(express.json());
 app.use(cors());
-app.use(bodyParser.json());
 
-// Endpoint for subscribing to the newsletter
-app.post('/subscribe', (req, res) => {
+const apiKey = '5251a174194e3c583177246baab94b3e-79295dd0-3fd1c949'; 
+const domain = 'sandboxa0a71913b58a4f3f86615cc1c7ccbf32.mailgun.org'; 
+
+const mg = mailgun({ apiKey, domain });
+
+
+
+
+app.post("/subscribe", (req, res) => {
   const { email } = req.body;
+
   if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
+    return res.status(400).json({ error: "Email is required" });
   }
 
   const data = {
-    from: 'Daily Insider <newsletter@YOUR_MAILGUN_DOMAIN>',
+    from: `gopeshs525@gmail.com`,
     to: email,
-    subject: 'Welcome to the Daily Insider Newsletter!',
-    text: 'Thank you for subscribing to our newsletter!',
+    subject: "Subscription Confirmation",
+    text: "Thank you for subscribing to our Daily Insider!",
   };
 
   mg.messages().send(data, (error, body) => {
     if (error) {
-      return res.status(500).json({ message: 'Error sending email', error });
+      return res.status(500).json({ error: error.message });
     }
-    return res.status(200).json({ message: 'Email sent successfully' });
+    res.status(200).json({ message: "Subscription email sent successfully!" });
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(5001, () => {
+  console.log("Server running on port 5001");
 });

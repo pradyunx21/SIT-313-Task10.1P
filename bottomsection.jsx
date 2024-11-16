@@ -1,20 +1,38 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 import "./bottomsection.css";
 
 const BottomBar = () => {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleSubscribe = async () => {
-    try {
-      const response = await axios.post('http://localhost:5001/subscribe', { email });
-      setMessage(response.data.message);
-      setEmail(''); // Clear the email field after successful subscription
-    } catch (error) {
-      setMessage('There was an error subscribing. Please try again.');
-      console.error(error);
+    if (!email || !validateEmail(email)) {
+      setMessage("Please enter a valid email.");
+      return;
     }
+
+    setIsLoading(true); // Set loading state to true
+    try {
+      const response = await axios.post("http://localhost:5001/subscribe", {
+        email,
+      });
+      setMessage("Subscription successful! Check your email.");
+      setEmail(""); // Clear email input
+    } catch (error) {
+      setMessage(
+        error.response?.data?.error || "Failed to subscribe. Please try again."
+      );
+    } finally {
+      setIsLoading(false); // Reset loading state
+    }
+  };
+
+  // Email validation function
+  const validateEmail = (email) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
   };
 
   return (
@@ -26,8 +44,10 @@ const BottomBar = () => {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <button onClick={handleSubscribe}>Subscribe</button>
-      {message && <p>{message}</p>}
+      <button onClick={handleSubscribe} disabled={isLoading}>
+        {isLoading ? "Subscribing..." : "SUBSCRIBE"}
+      </button>
+      {message && <p className="message">{message}</p>}
     </div>
   );
 };
